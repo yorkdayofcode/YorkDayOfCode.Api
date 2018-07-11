@@ -28,6 +28,7 @@ namespace YorkDayOfCode.Api
             ICollector<CreateCanvasImage> createCanvasQueue,
             TraceWriter log)
         {
+            log.Info("Called");
             var bytes = Convert.FromBase64String(canvas.Image);
 
             var canvasId = _randomWordSuggester.Suggest();
