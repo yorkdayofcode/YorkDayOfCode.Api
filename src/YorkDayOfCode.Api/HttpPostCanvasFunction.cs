@@ -7,23 +7,19 @@ using Microsoft.Azure.WebJobs.Host;
 using Newtonsoft.Json;
 using YorkDayOfCode.Api.Messages;
 using YorkDayOfCode.Api.Models;
+using YorkDayOfCode.Api.SuggestCanvasID;
 
 namespace YorkDayOfCode.Api
 {
-    public interface ICanvasIdProvider
-    {
-        string GetNext();
-    }
-
-    public class CanvasIdProvider : ICanvasIdProvider
-    {
-        public string GetNext()
-        {
-            return Guid.NewGuid().ToString();
-        }
-    }
     public static class HttpPostCanvasFunction
     {
+        private static readonly RandomWordSuggester _randomWordSuggester;
+
+        static HttpPostCanvasFunction()
+        {
+            var rnd = new RandomUsingSystemRandom();
+            _randomWordSuggester = new RandomWordSuggester(rnd);
+        }
         [FunctionName("HttpPostCanvas")]
         public static IActionResult Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "canvasses")]
@@ -32,10 +28,10 @@ namespace YorkDayOfCode.Api
             ICollector<CreateCanvasImage> createCanvasQueue,
             TraceWriter log)
         {
-            var idProvider = new CanvasIdProvider();
             var bytes = Convert.FromBase64String(canvas.Image);
 
-            var canvasId = idProvider.GetNext();
+            var canvasId = _randomWordSuggester.Suggest();
+
             var createCanvasImage = new CreateCanvasImage() {CanvasId = canvasId, Image = bytes};
             createCanvasQueue.Add(createCanvasImage);
 
