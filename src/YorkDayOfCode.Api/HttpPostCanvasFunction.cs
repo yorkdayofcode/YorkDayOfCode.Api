@@ -6,8 +6,10 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs.Host;
+using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
+using Polly;
 using YorkDayOfCode.Api.Messages;
 using YorkDayOfCode.Api.Models;
 using YorkDayOfCode.Api.SuggestCanvasID;
@@ -35,8 +37,12 @@ namespace YorkDayOfCode.Api
             TraceWriter log)
         {
             var canvasMetaStorage = new CanvasMetaStorage(canvassesTable, RandomWordSuggester);
-            var canvasId = await canvasMetaStorage.Store(canvas.Code);
 
+            var canvasId = await Policy
+                .Handle<StorageException>()
+                .RetryAsync(3)
+                .ExecuteAsync(async () => await canvasMetaStorage.Store(canvas.Code));
+            
             var bytes = Convert.FromBase64String(canvas.Image);
             var createCanvasImage = new CreateCanvasImage() { CanvasId = canvasId, Image = bytes};
             createCanvasQueue.Add(createCanvasImage);

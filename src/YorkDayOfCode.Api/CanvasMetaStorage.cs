@@ -22,7 +22,7 @@ namespace YorkDayOfCode.Api
         {
             _cloudTable.CreateIfNotExistsAsync();
 
-            var canvasId = await GetUniqueCanvasId();
+            var canvasId = _canvasIdSuggester.Suggest();
 
             var tableEntity = new CanvasTableEntity() { PartitionKey = canvasId, Code = code };
 
@@ -32,34 +32,5 @@ namespace YorkDayOfCode.Api
 
             return canvasId;
         }   
-
-        private async Task<string> GetUniqueCanvasId()
-        {
-            var canvasId = _canvasIdSuggester.Suggest();
-
-            if (await PartitionKeyExists(canvasId))
-            {
-                canvasId = _canvasIdSuggester.Suggest();
-                if (await PartitionKeyExists(canvasId))
-                {
-                    canvasId = _canvasIdSuggester.Suggest();
-                    if (await PartitionKeyExists(canvasId))
-                    {
-                        throw new NotImplementedException("Could not get a unique canvas id");
-                    }
-                }
-            }
-
-            return canvasId;
-        }
-
-        public async Task<bool> PartitionKeyExists(string partitionKey)
-        {
-            var tableOperation = TableOperation.Retrieve(partitionKey, "", new List<string>() {"PartitionKey"});
-
-            var result = await _cloudTable.ExecuteAsync(tableOperation);
-
-            return result.Result != null;
-        }
     }
 }
