@@ -218,7 +218,6 @@ detail
 determine
 develop
 development
-die
 difference
 different
 difficult
@@ -397,7 +396,6 @@ huge
 human
 hundred
 husband
-I
 idea
 identify
 if
@@ -436,7 +434,6 @@ just
 keep
 key
 kid
-kill
 kind
 kitchen
 know
@@ -565,7 +562,6 @@ note
 nothing
 notice
 now
-n't
 number
 occur
 of
@@ -760,8 +756,6 @@ service
 set
 seven
 several
-sex
-sexual
 shake
 share
 she
