@@ -4,6 +4,7 @@ using Microsoft.Azure.WebJobs.Host;
 using Microsoft.WindowsAzure.Storage.Blob;
 using System;
 using System.Threading.Tasks;
+using YorkDayOfCode.Api.Messages;
 using YorkDayOfCode.Api.Models;
 
 namespace YorkDayOfCode.Api
@@ -12,13 +13,16 @@ namespace YorkDayOfCode.Api
     {
         [FunctionName("QueueCanvas")]
         public static async Task QueueTrigger(
-            [QueueTrigger("myqueue-items")] Canvas canvas,
-            [Blob("sample-images-md/{name}", FileAccess.Write)] ICloudBlob imageBlob,
+            [QueueTrigger("create-canvas")] CreateCanvasImage message,
+            [Blob("canvasses")] CloudBlobContainer cloudBlobContainer,
             TraceWriter log)
         {
-            var imageBytes = Convert.FromBase64String(canvas.Image);
+            await cloudBlobContainer.CreateIfNotExistsAsync();
 
-            await imageBlob.UploadFromByteArrayAsync(imageBytes, 0, imageBytes.Length);
+            var imageBlob = cloudBlobContainer.GetBlockBlobReference(message.CanvasId);
+            imageBlob.Properties.ContentType = "image/jpeg";
+
+            await imageBlob.UploadFromByteArrayAsync(message.Image, 0, message.Image.Length);
         }
     }
 }
