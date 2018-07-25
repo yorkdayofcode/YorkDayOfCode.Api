@@ -1,8 +1,7 @@
-using System;
 using Xunit;
 using YorkDayOfCode.Api.SuggestCanvasID;
 
-namespace SuggestCanvasID.Tests
+namespace YorkDayOfCode.API.Tests
 {
     public class TestRandomWordSuggester
     {
