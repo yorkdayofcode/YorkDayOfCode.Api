@@ -20,7 +20,7 @@ namespace YorkDayOfCode.Api
 
         public async Task<string> Store(string code)
         {
-            _cloudTable.CreateIfNotExistsAsync();
+            await _cloudTable.CreateIfNotExistsAsync();
 
             var canvasId = _canvasIdSuggester.Suggest();
 

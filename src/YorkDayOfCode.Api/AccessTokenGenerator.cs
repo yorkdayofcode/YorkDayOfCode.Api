@@ -18,7 +18,7 @@ namespace YorkDayOfCode.Api
 
         public string Generate(string userId, TimeSpan expiresIn)
         {
-            var key = Encoding.UTF8.GetBytes(_symmetricSigningKey.Base64Value);
+            var key = Convert.FromBase64String(_symmetricSigningKey.Base64Value);
 
             var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
                 SecurityAlgorithms.HmacSha256Signature);
@@ -30,6 +30,7 @@ namespace YorkDayOfCode.Api
 
             var securityTokenDescriptor = new SecurityTokenDescriptor()
             {
+                Audience = "https://yorkdayofcode.github.io",
                 Issuer = "https://yorkdayofcode.github.io",
                 Subject = claimsIdentity,
                 SigningCredentials = signingCredentials,

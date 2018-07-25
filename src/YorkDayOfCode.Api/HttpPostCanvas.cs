@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -16,26 +18,35 @@ using YorkDayOfCode.Api.SuggestCanvasID;
 
 namespace YorkDayOfCode.Api
 {
-    public static class HttpPostCanvasFunction
+    public static class HttpPostCanvas
     {
         private static readonly RandomWordSuggester RandomWordSuggester;
+        private static readonly HeaderAuthorizer HeaderAuthorizer;
 
-        static HttpPostCanvasFunction()
+        static HttpPostCanvas()
         {
             var rnd = new RandomUsingSystemRandom();
             RandomWordSuggester = new RandomWordSuggester(rnd);
+            HeaderAuthorizer =
+                new HeaderAuthorizer(new TokenValidator(new SymmetricSigningKey(), new JwtSecurityTokenHandler()));
         }
 
         [FunctionName("HttpPostCanvas")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "canvasses")]
             Canvas canvas,
+            IDictionary<string, string> headers,
             [Queue("create-canvas")]
             ICollector<CreateCanvasImage> createCanvasQueue,
             [Table("canvas")]
             CloudTable canvassesTable,
             TraceWriter log)
         {
+            if (!HeaderAuthorizer.Authorize(headers))
+            {
+                return new UnauthorizedResult();
+            }
+
             var canvasMetaStorage = new CanvasMetaStorage(canvassesTable, RandomWordSuggester);
 
             var canvasId = await Policy

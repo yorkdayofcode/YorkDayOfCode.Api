@@ -1,4 +1,4 @@
-﻿namespace YorkDayOfCode.Api.Models.Users
+﻿namespace YorkDayOfCode.Api
 {
     public enum Experience
     {
