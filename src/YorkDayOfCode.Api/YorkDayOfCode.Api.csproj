@@ -10,6 +10,7 @@
     <EmbeddedResource Include="SuggestCanvasID\Words.txt" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="7.6.104" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.13" />
     <PackageReference Include="Polly" Version="6.0.1" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.1.4" />

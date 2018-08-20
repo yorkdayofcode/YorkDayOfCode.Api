@@ -1,11 +1,13 @@
-
 using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
 using YorkDayOfCode.Api.Models.Users;
 using YorkDayOfCode.Api.TableEntities;
+using YorkDayOfCode.Api.Validation;
 
 namespace YorkDayOfCode.Api
 {
@@ -13,19 +15,34 @@ namespace YorkDayOfCode.Api
     {
         private static readonly AccessTokenGenerator AccessTokenGenerator;
 
+        private static readonly UserValidator UserValidator;
+
         static HttpPostUser()
         {
             AccessTokenGenerator = new AccessTokenGenerator(new SymmetricSigningKey());
+            UserValidator = new UserValidator();
         }
 
         [FunctionName("HttpPostUser")]
-        public static IActionResult Run(
+        public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "users")]
             User user,
             [Table("users")]
             ICollector<UserTableEntity> users,
             TraceWriter log)
         {
+            var validationResult = await UserValidator.ValidateAsync(user).ConfigureAwait(false);
+
+            if (!validationResult.IsValid)
+            {
+                return new BadRequestObjectResult(new
+                {
+                    errors = validationResult.Errors
+                            .Select(x => new {x.PropertyName, x.ErrorMessage})
+                            .ToArray()
+                }); 
+            }
+
             var userId = Guid.NewGuid().ToString();
             users.Add(new UserTableEntity()
             {
